@@ -4,8 +4,8 @@ project(tentabot)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++14)
-add_definitions(-std=c++14 -g -O3 -ftree-vectorize -march=native)
+add_compile_options(-std=c++17)
+add_definitions(-std=c++17 -g -O3 -ftree-vectorize -march=native)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -30,7 +30,13 @@ find_package(catkin REQUIRED COMPONENTS
   forest_gen
   rotors_control
   laser_geometry
+  image_geometry
+  image_transport
+  ufomap_msgs
+  ufomap_ros
 )
+
+find_package(ufomap REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -220,7 +226,15 @@ target_link_libraries(laser_to_image_server ${PCL_LIBRARIES} ${catkin_LIBRARIES}
 
 add_executable(tentabot_server src/tentabot_server.cpp)
 #add_dependencies(tentabot_server ${catkin_EXPORTED_TARGETS})
-target_link_libraries(tentabot_server ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CHOLMOD_LIBRARY} nlopt ${TF_LIBRARIES} trajectory_sampling_utility goal_utility tentabot)
+target_link_libraries(tentabot_server ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CHOLMOD_LIBRARY} nlopt ${TF_LIBRARIES} trajectory_sampling_utility goal_utility tentabot UFO::Map)
+
+add_executable(icra_dodgedrone_wrapper src/icra_dodgedrone/wrapper_node.cpp
+        src/icra_dodgedrone/odometry_transformer.cpp
+        src/icra_dodgedrone/pointcloud_generator.cpp
+        src/icra_dodgedrone/dodgedrone_map_utility.cpp)
+target_link_libraries(icra_dodgedrone_wrapper ${PCL_LIBRARIES}
+        ${catkin_LIBRARIES} ${CHOLDMOD_LIBRARY} nlopt ${TF_LIBRARIES}
+        ${FCL_LIBRARIES} map_utility trajectory_sampling_utility goal_utility tentabot UFO::Map)
 
 #############
 ## Install ##

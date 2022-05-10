@@ -261,7 +261,15 @@ class TrajectorySamplingUtility
     // DESCRIPTION: TODO...
     void save_trajectory_data();
 
-  private:
+    void
+    construct_trajectory_data_by_3d_holonomic(double robot_min_x_velo, double robot_min_x_pos, double robot_min_y_velo,
+                                              double robot_min_y_pos, double robot_min_z_velo, double robot_min_z_pos,
+                                              double robot_max_x_velo, double robot_max_x_pos, double robot_max_y_velo,
+                                              double robot_max_y_pos, double robot_max_z_velo, double robot_max_z_pos,
+                                              double robot_max_yaw, double robot_max_pitch,
+                                              double dt);
+
+private:
 
     vector<vector<geometry_msgs::Point>> trajectory_data;
     vector<vector<double>> velocity_control_data;
@@ -286,6 +294,7 @@ class TrajectorySamplingUtility
     visualization_msgs::MarkerArray trajectory_visu;
     visualization_msgs::MarkerArray trajectory_sampling_visu;
 
+    vector<double> holonomic_3d_model(vector<double> &x, vector<double> &u, double dt);
 }; // END of class TrajectorySamplingUtility
 
 #endif

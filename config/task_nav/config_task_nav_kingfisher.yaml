@@ -1,0 +1,39 @@
+## World Parameters
+world_name: "drone"
+world_frame_name: "world"
+
+## Goal Parameters
+goal_msg: ""
+n_goal: 1
+
+goal1_x: 70
+goal1_y: 0
+goal1_z: 1
+goal1_yaw: 0 # approx -Pi / 4
+
+## Robot Parameters
+n_robot: 1
+robot_name: "kingfisher"
+robot_model: "unknown"
+robot_frame_name: "kingfisher"
+
+robot_bbx_x_min: -0.01
+robot_bbx_x_max: 0.01
+robot_bbx_y_min: -0.01
+robot_bbx_y_max: 0.01
+robot_bbx_z_min: -0.02
+robot_bbx_z_max: 0.02
+
+robot_max_lat_velo: 5
+robot_max_lat_acc: 5
+robot_max_yaw_velo: 0
+robot_max_yaw_acc: 0
+
+robot_init_pos_x: 0
+robot_init_pos_y: 0
+robot_init_pos_z: 1
+robot_init_yaw: 0
+
+robot_odometry_msg: "/kingfisher/dodgeros_pilot/odometry"
+# robot_pose_control_msg: "/kingfisher/dodgeros_pilot/go_to_pose"
+robot_velo_control_msg: "/kingfisher/dodgeros_pilot/velocity_command"

@@ -9,7 +9,7 @@
 // REFERENCES:
 // [1] N. Ü. Akmandor and T. Padir, "A 3D Reactive Navigation Algorithm 
 //     for Mobile Robots by Using Tentacle-Based Sampling," 2020 Fourth 
-//     IEEE International Conference on Robotic Computing (IRC), Taichung, 
+//     IEEE International Conference on Robotic Computing (IRC), Taichung,
 //     Taiwan, 2020, pp. 9-16, doi: 10.1109/IRC.2020.00009.
 // [2] F. von Hundelshausen, M. Himmelsbach, F. Hecker, A. Mueller, and 
 //     H.-J. Wuensche. Driving with tentacles: Integral structures for 
@@ -545,6 +545,11 @@ void Tentabot::mapCallback(const octomap_msgs::Octomap::ConstPtr& msg)
   status_param.measured_local_map = *msg;
 }
 
+void Tentabot::ufoMapCallback(const ufomap_msgs::UFOMapStampedConstPtr& msg) {
+  status_param.map_frame_name = msg->header.frame_id;
+  status_param.measured_local_map_ufo = *msg;
+}
+
 void Tentabot::robotPoseCallback(const geometry_msgs::Pose::ConstPtr& msg)
 {
   //cout << "Tentabot::robotPoseCallback -> Incoming data..." << endl;
@@ -589,7 +594,7 @@ void Tentabot::mainCallback(const ros::TimerEvent& e)
 
     // UPDATE EGO GRID DATA
     auto t1 = std::chrono::high_resolution_clock::now();
-    update_ego_grid_data();
+    update_ego_grid_data_ufo();
 
     // UPDATE HEURISTIC FUNCTIONS
     auto t2 = std::chrono::high_resolution_clock::now();
@@ -742,7 +747,7 @@ void Tentabot::toPoint(int ind, geometry_msgs::Point32& po)
 
 void Tentabot::initialize(NodeHandle& nh)
 {
-  sort_tentacles();
+  sort_tentacles("x");
   calculate_tentacle_length_and_bbx_data();
 
   status_param.egrid_vnum_x_max = abs(status_param.tentacle_bbx_max.x + off_tuning_param.sdist_x_max) / off_tuning_param.egrid_vdim + 1;
@@ -783,11 +788,11 @@ void Tentabot::initialize(NodeHandle& nh)
 
   if(robot_param.robot_pose_control_msg != "")
   {
-    status_param.command_pose_pub = nh.advertise<geometry_msgs::PoseStamped>(robot_param.robot_pose_control_msg, 100);
+    status_param.command_pose_pub = nh.advertise<geometry_msgs::PoseStamped>(robot_param.robot_pose_control_msg, 1);
   }
   else if(robot_param.robot_velo_control_msg != "")
   {
-    status_param.command_velo_pub = nh.advertise<geometry_msgs::Twist>(robot_param.robot_velo_control_msg, 100);
+    status_param.command_velo_pub = nh.advertise<geometry_msgs::TwistStamped>(robot_param.robot_velo_control_msg, 1);
   }
 
   if(process_param.visu_flag == true)
@@ -815,7 +820,8 @@ void Tentabot::initialize(NodeHandle& nh)
   sub_odom = nh.subscribe(robot_param.robot_odometry_msg, 1000, &Tentabot::odometryCallback, this);
 
   // SUBSCRIBE TO THE MAP DATA (Octomap)
-  sub_map = nh.subscribe(robot_param.local_map_msg, 1000, &Tentabot::mapCallback, this);
+  //sub_map = nh.subscribe(robot_param.local_map_msg, 1000, &Tentabot::mapCallback, this);
+  sub_map = nh.subscribe("/kingfisher/ufomap", 1, &Tentabot::ufoMapCallback, this);
 
   // DRL SERVICE
   srv_rl_step = nh.advertiseService("rl_step", &Tentabot::rl_step_srv, this);
@@ -1858,6 +1864,10 @@ bool Tentabot::isOccupied(double x, double y, double z)
   }
 }
 
+bool Tentabot::isOccupiedUFO(double x, double y, double z) {
+  return this->status_param.tmap_ufo->isOccupied(x, y, z);
+}
+
 void Tentabot::update_planning_states()
 {
   // UPDATE COUNTER BEFORE PLANNING
@@ -1867,7 +1877,10 @@ void Tentabot::update_planning_states()
   status_param.robot_pose = status_param.measured_robot_pose;
 
   // UPDATE CURRENT MAP BEFORE PLANNING
-  status_param.tmap = std::shared_ptr<octomap::ColorOcTree> (dynamic_cast<octomap::ColorOcTree*> (octomap_msgs::msgToMap(status_param.measured_local_map)));
+  //status_param.tmap = std::shared_ptr<octomap::ColorOcTree> (dynamic_cast<octomap::ColorOcTree*> (octomap_msgs::msgToMap(status_param.measured_local_map)));
+  auto* ufoMap = new ufo::map::OccupancyMapColor(0.16);
+  ufomap_msgs::msgToUfo(this->status_param.measured_local_map_ufo.map, *ufoMap);
+  status_param.tmap_ufo = std::shared_ptr<ufo::map::OccupancyMapColor>(ufoMap);
 
   // UPDATE CURRENT TRANSFORMATION MATRIX OF ROBOT WRT WORLD BEFORE PLANNING
   try
@@ -1981,6 +1994,52 @@ void Tentabot::update_ego_grid_data()
       }
     }
   }
+}
+
+void Tentabot::update_ego_grid_data_ufo() {
+    // UPDATE THE LINEAR OCCUPANCY GRID AROUND THE ROBOT
+    int vox_index;
+    int total_voxel_cnt = status_param.ego_grid_data.ovox_pos.size();
+    status_param.ego_grid_data.ovox_value.clear();
+    status_param.ego_grid_data.ovox_value.resize(total_voxel_cnt);
+
+    if (process_param.visu_flag == true)
+    {
+        visu_param.occupancy_pc.points.clear();
+    }
+
+    tf::Vector3 bbx_min(status_param.egrid_dist_x_min, status_param.egrid_dist_y_min, status_param.egrid_dist_z_min);
+    tf::Vector3 bbx_max(status_param.egrid_dist_x_max, status_param.egrid_dist_y_max, status_param.egrid_dist_z_max);
+
+    for(auto it = status_param.tmap_ufo->beginTree(); it != status_param.tmap_ufo->endTree(); ++it)
+    {
+        // status_param.tmap -> inBBX(it.getKey())
+        tf::Vector3 op_wrt_world(it.getX(), it.getY(), it.getZ());
+        tf::Vector3 op_wrt_robot = status_param.transform_robot_wrt_world.inverse() * op_wrt_world;
+
+        if ( isInBBx(op_wrt_robot, bbx_min, bbx_max) && isOccupiedUFO(op_wrt_world.x(), op_wrt_world.y(), op_wrt_world.z()) )
+        {
+            vox_index = toLinIndex(op_wrt_robot);
+
+            if ( vox_index >= 0 && vox_index < total_voxel_cnt )
+            {
+                if (status_param.ego_grid_data.ovox_value[vox_index] < off_tuning_param.max_occupancy_belief_value)
+                {
+                    status_param.ego_grid_data.ovox_value[vox_index] = off_tuning_param.max_occupancy_belief_value;
+
+                    if (process_param.visu_flag == true)
+                    {
+                        geometry_msgs::Point32 po;
+                        po.x = op_wrt_robot.x();
+                        po.y = op_wrt_robot.y();
+                        po.z = op_wrt_robot.z();
+
+                        visu_param.occupancy_pc.points.push_back(po);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Tentabot::update_heuristic_values()
@@ -2562,8 +2621,35 @@ void Tentabot::send_motion_command_by_velocity_control()
 
   if(!status_param.navexit_flag)
   {
-    status_param.command_velo.linear.x = off_tuning_param.velocity_control_data[status_param.best_tentacle][0];
-    status_param.command_velo.angular.z = off_tuning_param.velocity_control_data[status_param.best_tentacle][1];
+    double next_yaw;
+
+    double dist2goal_threshold = 3.0;
+    double next_yaw_threshold = 0.4*PI;
+    double min_speed = 0.0;
+    double speed_inc_dec = 0.5;
+    double weight_inc_dec = 0.25;
+    double angular_velocity_weight = 2.0;
+    double min_lat_speed_weight = 1.0;
+    double max_lat_speed_weight = 4.0;
+
+    tf::Vector3 next_point_wrt_robot( off_tuning_param.tentacle_data[status_param.best_tentacle][0].x,
+                                    off_tuning_param.tentacle_data[status_param.best_tentacle][0].y,
+                                    off_tuning_param.tentacle_data[status_param.best_tentacle][0].z);
+
+    double max_yaw_angle_dt = robot_param.dummy_max_yaw_velo * status_param.dt;
+
+    // CALCULATE NEXT YAW ANGLE
+    next_yaw = atan2(next_point_wrt_robot.y(), next_point_wrt_robot.x());
+    if (abs(next_yaw) > max_yaw_angle_dt)
+    {
+      next_yaw *= max_yaw_angle_dt / abs(next_yaw);
+    }
+    next_yaw *= angular_velocity_weight;
+
+    status_param.command_velo.twist.linear.x = off_tuning_param.velocity_control_data[status_param.best_tentacle][0];
+    status_param.command_velo.twist.linear.y = off_tuning_param.velocity_control_data[status_param.best_tentacle][1];
+    status_param.command_velo.twist.linear.z = off_tuning_param.velocity_control_data[status_param.best_tentacle][2];
+    status_param.command_velo.twist.angular.z = next_yaw;
     status_param.command_velo_pub.publish(status_param.command_velo);
 
     /*

@@ -148,7 +148,21 @@ int main(int argc, char** argv)
             tsu.set_lateral_velocity_sampling_count(lat_velo_samp_cnt);
             tsu.set_angular_velocity_sampling_count(ang_velo_samp_cnt);
 
-            tsu.construct_trajectory_data_by_simple_car_model(rp.dummy_max_lat_velo, rp.dummy_max_yaw_velo, 0.01);
+            tsu.construct_trajectory_data_by_3d_holonomic(-rp.dummy_max_lat_velo,
+                                                          0,
+                                                          -rp.dummy_max_lat_velo,
+                                                          -10,
+                                                          -rp.dummy_max_lat_velo,
+                                                          -10,
+                                                          rp.dummy_max_lat_velo,
+                                                          10,
+                                                          rp.dummy_max_lat_velo,
+                                                          10,
+                                                          rp.dummy_max_lat_velo,
+                                                          10,
+                                                          1.22173,
+                                                          1.22173,
+                                                          0.01);
         }
         else
         {

@@ -532,6 +532,29 @@ void TrajectorySamplingUtility::construct_trajectory_data_by_geometry(bool no_re
   }
 }
 
+// x = [x(m), y(m), z(m), theta_x(rad), theta_y(rad), theta_z(rad), v_x(m/s), v_y(m/s), v_z(m/s), omega_x(rad/s), omega_y(rad/s), omega_z(rad/s)]
+// u = [v_x(m/s), v_y(m/s), v_z(m/s), omega_x(rad/s), omega_y(rad/s), omega_z(rad/s)]
+
+vector<double> TrajectorySamplingUtility::holonomic_3d_model(vector<double>& x, vector<double>& u, double dt) {
+    x[0] += u[0] * dt;
+    x[1] += u[1] * dt;
+    x[2] += u[2] * dt;
+
+    x[3] = u[3] * dt;
+    x[4] = u[4] * dt;
+    x[5] = u[5] * dt;
+
+    x[6] = u[0];
+    x[7] = u[1];
+    x[8] = u[2];
+
+    x[9] = u[3];
+    x[10] = u[4];
+    x[11] = u[5];
+
+    return x;
+}
+
 vector<double> TrajectorySamplingUtility::simple_car_model(vector<double>& x, vector<double>& u, double dt)
 {
   x[2] += u[1] * dt;
@@ -564,11 +587,13 @@ vector<geometry_msgs::Point> TrajectorySamplingUtility::construct_trajectory_by_
     if (model_name == "simple_car")
     {
       x = simple_car_model(x, u, dt);
+    } else if (model_name == "3d_holonomic") {
+      x = holonomic_3d_model(x, u, dt);
     }
 
     p_new.x = x[0];
     p_new.y = x[1];
-    p_new.z = 0;
+    p_new.z = x[2];
 
     current_ttime += dt;
 
@@ -587,6 +612,109 @@ vector<geometry_msgs::Point> TrajectorySamplingUtility::construct_trajectory_by_
   //print(trajectory);
 
   return trajectory;
+}
+
+void TrajectorySamplingUtility::construct_trajectory_data_by_3d_holonomic(double robot_min_x_velo,
+                                                                          double robot_min_x_pos,
+                                                                          double robot_min_y_velo,
+                                                                          double robot_min_y_pos,
+                                                                          double robot_min_z_velo,
+                                                                          double robot_min_z_pos,
+                                                                          double robot_max_x_velo,
+                                                                          double robot_max_x_pos,
+                                                                          double robot_max_y_velo,
+                                                                          double robot_max_y_pos,
+                                                                          double robot_max_z_velo,
+                                                                          double robot_max_z_pos,
+                                                                          double robot_max_yaw,
+                                                                          double robot_max_pitch,
+                                                                          double dt) {
+    clear_trajectory_data();
+    trajectory_lrm_data.clear();
+    clear_velocity_control_data();
+
+    if (trajectory_data_path == "")
+    {
+        create_trajectory_data_path();
+    }
+
+    string tentabot_path = ros::package::getPath("tentabot") + "/";
+
+    ofstream velocity_control_data_stream;
+    velocity_control_data_stream.open(tentabot_path + trajectory_data_path + "velocity_control_data.csv");
+    //velocity_control_data_stream << "lateral_velocity_samples[m/s],angular_velocity_samples[rad/s]\n";
+
+    vector<double> x_velocity_samples = sampling_func(robot_min_x_velo, robot_max_x_velo, lateral_velocity_sampling_count);
+    vector<double> y_velocity_samples = sampling_func(robot_min_y_velo, robot_max_y_velo, lateral_velocity_sampling_count);
+    vector<double> z_velocity_samples = sampling_func(robot_min_z_velo, robot_max_z_velo, lateral_velocity_sampling_count);
+
+    // vector<double> neg_x_velocity_samples = sampling_func(robot_min_x_velo, 0 - dt, lateral_velocity_sampling_count);
+    // vector<double> neg_y_velocity_samples = sampling_func(robot_min_y_velo, 0 - dt, lateral_velocity_sampling_count);
+    // vector<double> neg_z_velocity_samples = sampling_func(robot_min_z_velo, 0 - dt, lateral_velocity_sampling_count);
+    //vector<double> x_angular_velocity_samples = angle_sampling_func(2*robot_max_pitch_velo, angular_velocity_sampling_count);
+    //vector<double> y_angular_velocity_samples = angle_sampling_func(2*robot_max_roll_velo, angular_velocity_sampling_count);
+    //vector<double> z_angular_velocity_samples = angle_sampling_func(2*robot_max_yaw_velo, angular_velocity_sampling_count);
+
+    // x = [x(m), y(m), z(m), theta_x(rad), theta_y(rad), theta_z(rad), v_x(m/s), v_y(m/s), v_z(m/s), omega_x(rad/s), omega_y(rad/s), omega_z(rad/s)]
+    vector<double> x_init{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    // u = [v_x(m/s), v_y(m/s), v_z(m/s), omega_x(rad/s), omega_y(rad/s), omega_z(rad/s)]
+    vector<double> u;
+
+    vector<geometry_msgs::Point> traj;
+    for (double & x_velocity_sample : x_velocity_samples) {
+        for (double & y_velocity_sample : y_velocity_samples) {
+            for(double & z_velocity_sample : z_velocity_samples) {
+                u.push_back(x_velocity_sample);
+                u.push_back(y_velocity_sample);
+                u.push_back(z_velocity_sample);
+                u.push_back(0);
+                u.push_back(0);
+                u.push_back(0);
+                traj = construct_trajectory_by_model("3d_holonomic", x_init, u, dt);
+                subsample(traj, trajectory_sampling_count);
+                traj.erase(std::remove_if(traj.begin(), traj.end(), [&](geometry_msgs::Point p){
+                    return p.x < robot_min_x_pos || p.x > robot_max_x_pos
+                           || p.y < robot_min_y_pos || p.y > robot_max_y_pos
+                           || p.z < robot_min_z_pos || p.z > robot_max_z_pos;
+                }), traj.end());
+
+//                traj.erase(std::remove_if(traj.begin(), traj.end(), [&](geometry_msgs::Point p) {
+//                    return !isInsideTriangle(p.x, p.y, robot_max_x_pos, 0.611) && p.x != 0.0;
+//                }), traj.end());
+
+                // || abs(M_PI_2 - atan2(traj.end()->x, traj.begin()->z)) > robot_max_pitch / 2.0) {
+//                    if(traj.begin()->x == 0 && traj.end()->x == 0 ||
+//                        traj.begin()->y == 0 && traj.end()->y == 0 ||
+//                        traj.begin()->z == 0 && traj.end()->z == 0) {
+//                        continue;
+//                    } else
+//                if(abs(M_PI_2 - atan2(traj.end()->x, traj.end()->y)) > robot_max_yaw / 2.0) {
+//                    traj.clear();
+//                }
+
+                if(!traj.empty() && abs(M_PI_2 - atan2(traj.end()->x, traj.end()->z)) > robot_max_pitch / 2.0 ||
+                        abs(M_PI_2 - atan2(traj.end()->x, traj.end()->y)) > robot_max_yaw / 2.0) {
+                    traj.clear();
+                    u.clear();
+                    continue;
+                }
+
+                if(!traj.empty()){
+
+                    velocity_control_data.push_back(u);
+                    velocity_control_data_stream << x_velocity_sample << ","
+                                                 << y_velocity_sample << ","
+                                                 << z_velocity_sample << "\n";
+                    trajectory_data.push_back(traj);
+                }
+
+                u.clear();
+            }
+        }
+    }
+
+    velocity_control_data_stream.close();
 }
 
 void TrajectorySamplingUtility::construct_trajectory_data_by_simple_car_model(double robot_max_lat_velo, double robot_max_yaw_velo, double dt)

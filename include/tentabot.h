@@ -34,6 +34,10 @@
 #include <pcl_ros/transforms.h>
 #include <ros/package.h>
 #include <boost/filesystem.hpp>
+#include <ufo/map/occupancy_map_color.h>
+#include <ufomap_msgs/UFOMapStamped.h>
+#include <ufomap_msgs/conversions.h>
+#include <ufomap_ros/conversions.h>
 
 // --CUSTOM LIBRARIES--
 #include "common_utility.h"
@@ -175,10 +179,12 @@ class Tentabot
       vector<double> tentacle_weight_data;
 
       octomap_msgs::Octomap measured_local_map;
+      ufomap_msgs::UFOMapStamped measured_local_map_ufo;
       geometry_msgs::Pose measured_robot_pose;            // TODO: Review: most recent position and orientation of the robot with respect to global coordinate system
 
       string map_frame_name;
       std::shared_ptr<octomap::ColorOcTree> tmap;
+      std::shared_ptr<ufo::map::OccupancyMapColor> tmap_ufo;
       tf::StampedTransform transform_robot_wrt_world;
       geometry_msgs::Pose robot_pose;                      // TODO: Review: previous position and orientation of the robot with respect to global coordinate system
       geometry_msgs::Pose prev_robot_pose;                 // TODO: Review: position and orientation of the robot with respect to global coordinate system
@@ -189,7 +195,7 @@ class Tentabot
       double lat_speed_weight;
       double yaw_velo;
       geometry_msgs::PoseStamped command_pose;       // TODO: Review: position and orientation command of the robot with respect to global coordinate system
-      geometry_msgs::Twist command_velo;
+      geometry_msgs::TwistStamped command_velo;
 
       std::vector<int> tcrash_bin;
       bool navigability_flag;
@@ -362,6 +368,8 @@ class Tentabot
     // DESCRIPTION: TODO...
     void mapCallback(const octomap_msgs::Octomap::ConstPtr& msg);
 
+    void ufoMapCallback(const ufomap_msgs::UFOMapStampedConstPtr& msg);
+
     // DESCRIPTION: TODO...
     void robotPoseCallback(const geometry_msgs::Pose::ConstPtr& msg);
 
@@ -491,11 +499,15 @@ class Tentabot
     // DESCRIPTION: TODO...
     bool isOccupied(double x, double y, double z);
 
+    bool isOccupiedUFO(double x, double y, double z);
+
     // DESCRIPTION: TODO...
     void update_planning_states();
 
     // DESCRIPTION: TODO...UPDATE OCCUPANCY GRID DATA OF THE ROBOT
     void update_ego_grid_data();
+
+    void update_ego_grid_data_ufo();
 
     // DESCRIPTION: TODO...
     void update_heuristic_values();

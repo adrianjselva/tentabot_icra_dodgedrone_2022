@@ -12,3 +12,4 @@ build/
 !dataset/training/ViewPlot.py
 openai_ros-main.zip
 tentabot-main.zip
+.idea/
