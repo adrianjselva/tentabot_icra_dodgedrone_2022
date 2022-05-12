@@ -16,6 +16,10 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <octomap/ColorOcTree.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <tf2/exceptions.h>
+#include <geometry_msgs/Point32.h>
+#include <envsim_msgs/ObstacleArray.h>
 
 
 class DodgeDroneMapUtility {
@@ -25,6 +29,7 @@ private:
     ros::Publisher map_publisher_;
     ros::Publisher octomap_publisher_;
     ros::Subscriber pointcloud_subscriber_;
+    ros::Subscriber obstacle_pointcloud_subscriber_;
 
     // TF listener
     tf2_ros::Buffer tf_buffer;
@@ -32,12 +37,14 @@ private:
 
     ufo::map::OccupancyMapColor map_;
     std::shared_ptr<octomap::ColorOcTree> oct;
+    //sensor_msgs::PointCloud2Ptr obstacle_pointcloud;
 public:
 
     explicit DodgeDroneMapUtility(ros::NodeHandle& n);
     void updateMapFromPointcloud(const sensor_msgs::PointCloud2ConstPtr& pointcloud);
     void publishMap();
-    void publishOctoMap();
+
+    void updateObstacles(const sensor_msgs::PointCloud2Ptr &obstacle_pointcloud);
 };
 
 #endif //TENTABOT_DODGEDRONE_MAP_UTLITY_H

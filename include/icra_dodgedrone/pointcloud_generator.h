@@ -25,9 +25,16 @@ private:
     ros::NodeHandle& nh_;
 
     image_transport::Subscriber depth_subscriber;
+    pcl::PCLPointCloud2ConstPtr generated_pointcloud;
 
     ros::Publisher pointcloud_publisher;
     ros::Publisher camera_info_publisher;
+    ros::Publisher obstacle_pointcloud_publisher;
+
+
+    ros::Subscriber obstacle_subscriber;
+
+    envsim_msgs::ObstacleArrayConstPtr obstacles;
 public:
     explicit PointcloudGenerator(ros::NodeHandle& n);
 
@@ -41,6 +48,13 @@ public:
     static sensor_msgs::PointCloud2::Ptr constructPointcloudFromDepth(const sensor_msgs::ImagePtr& depth,
                                                                const sensor_msgs::CameraInfoPtr& camera_info);
     static sensor_msgs::CameraInfoPtr simulatedCameraInfo();
+
+    std::vector<geometry_msgs::Point32> extractPCLFromObstacle(geometry_msgs::Vector3 center, float object_radius);
+
+    void updateObstacles(const envsim_msgs::ObstacleArrayConstPtr &obstacleArray);
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr constructPointcloudFromObstacles(const envsim_msgs::ObstacleArrayConstPtr &obstacles);
+
 };
 
 #endif //TENTABOT_POINTCLOUD_GENERATOR_H

@@ -28,8 +28,8 @@ local_map_msg: "/octomap_tentabot"
 
 ## Process Parameters
 visu_flag: true
-time_limit: 120
-dt: 0.1
+time_limit: 150
+dt: 0.01
 goal_close_threshold: 0.5
 ground_collision_flag: false
 ground_collision_threshold: 0.1
@@ -52,22 +52,22 @@ tsamp_cnt: 25
 trajectory_gen_type: "kinematic"
 ttime: 45
 lat_velo_samp_cnt: 9
-ang_velo_samp_cnt: 10
+ang_velo_samp_cnt: 9
 
 
 ## Offline Tuning Parameters
-trajectory_data_path: ""
+trajectory_data_path: "dataset/trajectory_sampling/kingfisher/20220510_190227/"
 max_occupancy_belief_value: 100
 sweight_max: 1
 sweight_scale: 10
 egrid_vdim: 0.1
 
-pdist_x_min: -0.3
-pdist_x_max: 0.3
-pdist_y_min: -0.3
-pdist_y_max: 0.3
-pdist_z_min: -0.4
-pdist_z_max: 0.3
+pdist_x_min: -0.5
+pdist_x_max: 0.5
+pdist_y_min: -0.5
+pdist_y_max: 0.5
+pdist_z_min: -0.5
+pdist_z_max: 0.5
 
 sdist_x_min: -0.5
 sdist_x_max: 0.5

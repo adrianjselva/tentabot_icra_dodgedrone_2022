@@ -18,10 +18,10 @@
   <param name="config_map_utility"                value="$(arg config_map_utility)" />
   <param name="config_tentabot_server"            value="$(arg config_tentabot_server)" />
 
-  <node name="icra_dodgedrone_wrapper" pkg="tentabot" type="icra_dodgedrone_wrapper" />
+  <node name="icra_dodgedrone_wrapper" pkg="tentabot" type="icra_dodgedrone_wrapper" output="screen" />
 
 <!-- RUN TENTABOT HEURISTIC FRAMEWORK -->
-  <node name="tentabot_framework_launch" pkg="tentabot" type="tentabot_framework_launch.py" output="screen" />
+<!--  <node name="tentabot_framework_launch" pkg="tentabot" type="tentabot_framework_launch.py" output="screen" />-->
   <!-- <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
 
     Run a passthrough filter to clean NaNs

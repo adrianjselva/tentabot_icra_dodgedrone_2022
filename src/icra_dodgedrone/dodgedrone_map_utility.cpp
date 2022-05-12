@@ -11,8 +11,7 @@
 
 // --CUSTOM LIBRARIES--
 
-#include <geometry_msgs/TransformStamped.h>
-#include <tf2/exceptions.h>
+
 #include "icra_dodgedrone/dodgedrone_map_utility.h"
 
 DodgeDroneMapUtility::DodgeDroneMapUtility(ros::NodeHandle& n) :
@@ -23,9 +22,32 @@ tf_listener(this->tf_buffer) {
                                                  1,
                                                  &DodgeDroneMapUtility::updateMapFromPointcloud,
                                                  this);
+    //this->obstacle_pointcloud_subscriber_ = nh_.subscribe("/kingfisher/obstacle_pointcloud",
+                                    //                      1,
+                                            //              &DodgeDroneMapUtility::updateObstacles,
+                                           //               this);
     this->map_publisher_ = nh_.advertise<ufomap_msgs::UFOMapStamped>("/kingfisher/ufomap", 1);
 
     this->oct = std::make_shared<octomap::ColorOcTree>(0.1);
+}
+
+void DodgeDroneMapUtility::publishMap() {
+    // This is the UFOMap message object.
+    ufomap_msgs::UFOMapStamped::Ptr msg(new ufomap_msgs::UFOMapStamped);
+    ufo::map::DepthType pub_depth = 0;
+    // Convert UFOMap to ROS message
+    if (ufomap_msgs::ufoToMsg(this->map_, msg->map,  true, pub_depth)) {
+        // Conversion was successful
+        msg->header.stamp = ros::Time::now();
+        msg->header.frame_id = "map";
+        this->map_publisher_.publish(msg);
+
+        this->map_.clear();
+    }
+}
+
+void DodgeDroneMapUtility::updateObstacles(const sensor_msgs::PointCloud2Ptr& obstacle_pointcloud) {
+    //this->obstacle_pointcloud = obstacle_pointcloud;
 }
 
 void DodgeDroneMapUtility::updateMapFromPointcloud(const sensor_msgs::PointCloud2ConstPtr &pointcloud) {
@@ -44,30 +66,18 @@ void DodgeDroneMapUtility::updateMapFromPointcloud(const sensor_msgs::PointCloud
     }
 
     ufo::map::PointCloudColor cloud;
+    ufo::map::PointCloudColor obstacle_cloud;
     // Convert ROS point cloud to UFO point cloud
     ufomap_ros::rosToUfo(*pointcloud, cloud);
+    //ufomap_ros::rosToUfo(*this->obstacle_pointcloud, obstacle_cloud);
     // Transform point cloud to correct frame, do it in parallel (second param true)
     cloud.transform(transform, true);
+    obstacle_cloud.transform(transform, true);
 
     // Integrate point cloud into UFOMap, no max range (third param -1),
     // free space at depth level 1 (fourth param 1)
     this->map_.insertPointCloudDiscrete(transform.translation(), cloud, 50, 1);
-
+    //this->map_.insertPointCloudDiscrete(transform.translation(), obstacle_cloud, 50, 1);
     this->publishMap();
-}
-
-void DodgeDroneMapUtility::publishMap() {
-    // This is the UFOMap message object.
-    ufomap_msgs::UFOMapStamped::Ptr msg(new ufomap_msgs::UFOMapStamped);
-    ufo::map::DepthType pub_depth = 0;
-    // Convert UFOMap to ROS message
-    if (ufomap_msgs::ufoToMsg(this->map_, msg->map,  true, pub_depth)) {
-        // Conversion was successful
-        msg->header.stamp = ros::Time::now();
-        msg->header.frame_id = "map";
-        this->map_publisher_.publish(msg);
-
-        this->map_.clear();
-    }
 }
 
