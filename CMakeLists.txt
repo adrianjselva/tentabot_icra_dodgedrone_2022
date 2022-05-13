@@ -231,7 +231,10 @@ target_link_libraries(tentabot_server ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CHO
 add_executable(icra_dodgedrone_wrapper src/icra_dodgedrone/wrapper_node.cpp
         src/icra_dodgedrone/odometry_transformer.cpp
         src/icra_dodgedrone/pointcloud_generator.cpp
-        src/icra_dodgedrone/dodgedrone_map_utility.cpp src/icra_dodgedrone/dodgedrone_command_wrapper.cpp include/icra_dodgedrone/dodgedrone_command_wrapper.h src/icra_dodgedrone/model/Quadrotor.cpp)
+        src/icra_dodgedrone/dodgedrone_map_utility.cpp
+        src/icra_dodgedrone/dodgedrone_command_wrapper.cpp
+        src/icra_dodgedrone/model/Quadrotor.cpp
+        src/icra_dodgedrone/PID.cpp)
 target_link_libraries(icra_dodgedrone_wrapper ${PCL_LIBRARIES}
         ${catkin_LIBRARIES} ${CHOLDMOD_LIBRARY} nlopt ${TF_LIBRARIES}
         ${FCL_LIBRARIES} map_utility trajectory_sampling_utility goal_utility tentabot UFO::Map)

@@ -18,10 +18,10 @@ CBTR Quadrotor::calculateCBTR() {
 
     Eigen::Vector4d angularVelocities;
     angularVelocities <<
-        _angularVelocities.motor1,
-        _angularVelocities.motor2,
-        _angularVelocities.motor3,
-        _angularVelocities.motor4;
+        _angularVelocities.motor1 * _angularVelocities.motor1,
+        _angularVelocities.motor2 * _angularVelocities.motor2,
+        _angularVelocities.motor3 * _angularVelocities.motor3,
+        _angularVelocities.motor4 * _angularVelocities.motor4;
 
     auto product = constants * angularVelocities;
 

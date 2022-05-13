@@ -18,10 +18,43 @@
   <param name="config_map_utility"                value="$(arg config_map_utility)" />
   <param name="config_tentabot_server"            value="$(arg config_tentabot_server)" />
 
+  <param name="roll_kP" value="1" />
+  <param name="roll_kI" value="0" />
+  <param name="roll_kD" value="0" />
+  <param name="pitch_kP" value="3" />
+  <param name="pitch_kI" value="0" />
+  <param name="pitch_kD" value="0" />
+  <param name="yaw_kP" value="1" />
+  <param name="yaw_kI" value="0" />
+  <param name="yaw_kD" value="0" />
+
+  <param name="rollRate_kP" value="1" />
+  <param name="rollRate_kI" value="0" />
+  <param name="rollRate_kD" value="0" />
+  <param name="pitchRate_kP" value="1" />
+  <param name="pitchRate_kI" value="0" />
+  <param name="pitchRate_kD" value="0" />
+
+  <param name="angularX_kP" value="1" />
+  <param name="angularX_kI" value="0" />
+  <param name="angularX_kD" value="0" />
+
+  <param name="angularY_kP" value="1" />
+  <param name="angularY_kI" value="0" />
+  <param name="angularY_kD" value="0" />
+
+  <param name="angularZ_kP" value="1" />
+  <param name="angularZ_kI" value="0" />
+  <param name="angularZ_kD" value="0" />
+
+  <param name="z_kP" value="10.0" />
+  <param name="z_kI" value="1.0" />
+  <param name="z_kD" value="0.1" />
+
   <node name="icra_dodgedrone_wrapper" pkg="tentabot" type="icra_dodgedrone_wrapper" output="screen" />
 
 <!-- RUN TENTABOT HEURISTIC FRAMEWORK -->
-<!--  <node name="tentabot_framework_launch" pkg="tentabot" type="tentabot_framework_launch.py" output="screen" />-->
+<!--  <node name="tentabot_framework_launch" pkg="tentabot" type="tentabot_framework_launch.py" output="screen" />--> -->
   <!-- <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
 
     Run a passthrough filter to clean NaNs

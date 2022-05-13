@@ -31,8 +31,8 @@ visu_flag: true
 time_limit: 150
 dt: 0.01
 goal_close_threshold: 0.5
-ground_collision_flag: false
-ground_collision_threshold: 0.1
+ground_collision_flag: true
+ground_collision_threshold: 0.05
 #nav_data_path: "dataset/heuristic/firefly/"
 drl_service_flag: false
 
@@ -40,8 +40,8 @@ mode: "testing"
 
 ## Trajectory Sampling Parameters
 trajectory_sampling_dataset_path: "dataset/trajectory_sampling/kingfisher/"
-tlen: 50
-tsamp_cnt: 25
+tlen: 30
+tsamp_cnt: 10
 
 #trajectory_gen_type: "geometric"
 #tyaw: 1.22173
@@ -50,13 +50,13 @@ tsamp_cnt: 25
 #tpitch_cnt: 5
 
 trajectory_gen_type: "kinematic"
-ttime: 45
+ttime: 10
 lat_velo_samp_cnt: 9
 ang_velo_samp_cnt: 9
 
 
 ## Offline Tuning Parameters
-trajectory_data_path: "dataset/trajectory_sampling/kingfisher/20220510_190227/"
+trajectory_data_path: ""
 max_occupancy_belief_value: 100
 sweight_max: 1
 sweight_scale: 10
@@ -80,8 +80,8 @@ sdist_z_max: 0.5
 tbin_obs_cnt_threshold: 1
 crash_dist_scale: 0.5
 occupancy_scale: 3
-close_scale: 40
-smooth_scale: 40
+close_scale: 50
+smooth_scale: 30
 
 ### DRL Parameters
 ### NOTE: Be sure that -> drl_service_flag: true

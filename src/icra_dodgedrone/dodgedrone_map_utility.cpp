@@ -76,7 +76,7 @@ void DodgeDroneMapUtility::updateMapFromPointcloud(const sensor_msgs::PointCloud
 
     // Integrate point cloud into UFOMap, no max range (third param -1),
     // free space at depth level 1 (fourth param 1)
-    this->map_.insertPointCloudDiscrete(transform.translation(), cloud, 50, 1);
+    this->map_.insertPointCloudDiscrete(transform.translation(), cloud, 30, 1);
     //this->map_.insertPointCloudDiscrete(transform.translation(), obstacle_cloud, 50, 1);
     this->publishMap();
 }
