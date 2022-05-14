@@ -40,23 +40,23 @@ mode: "testing"
 
 ## Trajectory Sampling Parameters
 trajectory_sampling_dataset_path: "dataset/trajectory_sampling/kingfisher/"
-tlen: 30
+tlen: 10
 tsamp_cnt: 10
 
 #trajectory_gen_type: "geometric"
-#tyaw: 1.22173
-#tpitch: 1.22173
-#tyaw_cnt: 5
-#tpitch_cnt: 5
+tyaw: 1.22173
+tpitch: 1.22173
+tyaw_cnt: 5
+tpitch_cnt: 4
 
 trajectory_gen_type: "kinematic"
-ttime: 10
+ttime: 3.333
 lat_velo_samp_cnt: 9
 ang_velo_samp_cnt: 9
 
 
 ## Offline Tuning Parameters
-trajectory_data_path: ""
+trajectory_data_path: "dataset/trajectory_sampling/kingfisher/20220514_164842/"
 max_occupancy_belief_value: 100
 sweight_max: 1
 sweight_scale: 10
@@ -79,9 +79,9 @@ sdist_z_max: 0.5
 ## Online tuning Parameters
 tbin_obs_cnt_threshold: 1
 crash_dist_scale: 0.5
-occupancy_scale: 3
+occupancy_scale: 30
 close_scale: 50
-smooth_scale: 30
+smooth_scale: 40
 
 ### DRL Parameters
 ### NOTE: Be sure that -> drl_service_flag: true

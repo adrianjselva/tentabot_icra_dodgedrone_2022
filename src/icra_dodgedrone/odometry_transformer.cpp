@@ -40,7 +40,7 @@ void OdometryTransformer::odometryCallback(const nav_msgs::OdometryConstPtr &msg
     camera.child_frame_id = "camera";
     camera.transform.translation.x = 0;
     camera.transform.translation.y = 0;
-    camera.transform.translation.z = 0;
+    camera.transform.translation.z = 0.3;
 
     tf2::Quaternion q;
     q.setRPY(-M_PI_2, 0, -M_PI_2);

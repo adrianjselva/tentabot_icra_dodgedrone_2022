@@ -10,7 +10,7 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include <ufomap_msgs/UFOMapStamped.h>
-#include <ufo/map/occupancy_map_color.h>
+#include <ufo/map/occupancy_map.h>
 #include <ufomap_ros/conversions.h>
 #include <ufomap_msgs/conversions.h>
 #include <tf2_ros/buffer.h>
@@ -35,8 +35,9 @@ private:
     tf2_ros::Buffer tf_buffer;
     tf2_ros::TransformListener tf_listener;
 
-    ufo::map::OccupancyMapColor map_;
-    std::shared_ptr<octomap::ColorOcTree> oct;
+    ufo::map::OccupancyMap map_;
+
+    ufo::map::PointCloud boundingBox;
     //sensor_msgs::PointCloud2Ptr obstacle_pointcloud;
 public:
 

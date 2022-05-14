@@ -13,3 +13,4 @@ build/
 openai_ros-main.zip
 tentabot-main.zip
 .idea/
+dataset/trajectory_sampling/kingfisher

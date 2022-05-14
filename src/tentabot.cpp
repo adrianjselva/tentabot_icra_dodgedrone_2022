@@ -1878,9 +1878,9 @@ void Tentabot::update_planning_states()
 
   // UPDATE CURRENT MAP BEFORE PLANNING
   //status_param.tmap = std::shared_ptr<octomap::ColorOcTree> (dynamic_cast<octomap::ColorOcTree*> (octomap_msgs::msgToMap(status_param.measured_local_map)));
-  auto* ufoMap = new ufo::map::OccupancyMapColor(0.16);
+  auto* ufoMap = new ufo::map::OccupancyMap(0.16);
   ufomap_msgs::msgToUfo(this->status_param.measured_local_map_ufo.map, *ufoMap);
-  status_param.tmap_ufo = std::shared_ptr<ufo::map::OccupancyMapColor>(ufoMap);
+  status_param.tmap_ufo = std::shared_ptr<ufo::map::OccupancyMap>(ufoMap);
 
   // UPDATE CURRENT TRANSFORMATION MATRIX OF ROBOT WRT WORLD BEFORE PLANNING
   try

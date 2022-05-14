@@ -18,15 +18,19 @@ class DodgeDroneCommandWrapper {
 private:
     Quadrotor quadrotor;
 
-    PID roll;
-    PID pitch;
-    PID yaw;
-    PID rollRate;
-    PID pitchRate;
-    PID angularX;
-    PID angularY;
-    PID angularZ;
+//    PID roll;
+//    PID pitch;
+//    PID yaw;
+//    PID rollRate;
+//    PID pitchRate;
+//    PID angularX;
+//    PID angularY;
+//    PID angularZ;
+    PID x;
+    PID y;
     PID z;
+
+    PID yaw;
 
     ros::NodeHandle& nh_;
 

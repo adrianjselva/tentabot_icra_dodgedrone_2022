@@ -34,7 +34,7 @@
 #include <pcl_ros/transforms.h>
 #include <ros/package.h>
 #include <boost/filesystem.hpp>
-#include <ufo/map/occupancy_map_color.h>
+#include <ufo/map/occupancy_map.h>
 #include <ufomap_msgs/UFOMapStamped.h>
 #include <ufomap_msgs/conversions.h>
 #include <ufomap_ros/conversions.h>
@@ -184,7 +184,7 @@ class Tentabot
 
       string map_frame_name;
       std::shared_ptr<octomap::ColorOcTree> tmap;
-      std::shared_ptr<ufo::map::OccupancyMapColor> tmap_ufo;
+      std::shared_ptr<ufo::map::OccupancyMap> tmap_ufo;
       tf::StampedTransform transform_robot_wrt_world;
       geometry_msgs::Pose robot_pose;                      // TODO: Review: previous position and orientation of the robot with respect to global coordinate system
       geometry_msgs::Pose prev_robot_pose;                 // TODO: Review: position and orientation of the robot with respect to global coordinate system

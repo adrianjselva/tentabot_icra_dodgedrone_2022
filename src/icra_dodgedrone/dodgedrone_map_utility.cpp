@@ -27,8 +27,6 @@ tf_listener(this->tf_buffer) {
                                             //              &DodgeDroneMapUtility::updateObstacles,
                                            //               this);
     this->map_publisher_ = nh_.advertise<ufomap_msgs::UFOMapStamped>("/kingfisher/ufomap", 1);
-
-    this->oct = std::make_shared<octomap::ColorOcTree>(0.1);
 }
 
 void DodgeDroneMapUtility::publishMap() {
@@ -53,31 +51,54 @@ void DodgeDroneMapUtility::updateObstacles(const sensor_msgs::PointCloud2Ptr& ob
 void DodgeDroneMapUtility::updateMapFromPointcloud(const sensor_msgs::PointCloud2ConstPtr &pointcloud) {
     // Get transform
     ufo::math::Pose6 transform;
+    ufo::math::Pose6 worldTransform;
     try {
         // Lookup transform
         geometry_msgs::TransformStamped tf_trans = this->tf_buffer.lookupTransform("map",
                                                                               pointcloud->header.frame_id,
                                                                               ros::Time(0));
+        geometry_msgs::TransformStamped tf_world_trans = this->tf_buffer.lookupTransform("map", "world", ros::Time(0));
         // Convert ROS transform to UFO transform
         transform = ufomap_ros::rosToUfo(tf_trans.transform);
+        worldTransform = ufomap_ros::rosToUfo(tf_world_trans.transform);
     } catch (tf2::TransformException &ex) {
         ROS_WARN_THROTTLE(1, "%s", ex.what());
         return;
     }
 
-    ufo::map::PointCloudColor cloud;
-    ufo::map::PointCloudColor obstacle_cloud;
+    ufo::map::PointCloud cloud;
+    ufo::map::PointCloud bounds;
+
+    for(int x = -5; x <= 65; x++) {
+        for(int z = 0; z <= 10; z++) {
+            ufo::map::Point3 left((double) x, -10.0, (double) z);
+            ufo::map::Point3 right((double) x, 10.0, (double) z);
+            bounds.push_back(left);
+            bounds.push_back(right);
+        }
+    }
+
+    for(int x = -5; x <= 65; x++) {
+        for(int y = -10; y <= 10; y++) {
+            ufo::map::Point3 top((double) x, (double) y, 10.0);
+            bounds.push_back(top);
+        }
+    }
+
     // Convert ROS point cloud to UFO point cloud
     ufomap_ros::rosToUfo(*pointcloud, cloud);
     //ufomap_ros::rosToUfo(*this->obstacle_pointcloud, obstacle_cloud);
     // Transform point cloud to correct frame, do it in parallel (second param true)
     cloud.transform(transform, true);
-    obstacle_cloud.transform(transform, true);
+    bounds.transform(worldTransform, true);
 
     // Integrate point cloud into UFOMap, no max range (third param -1),
     // free space at depth level 1 (fourth param 1)
-    this->map_.insertPointCloudDiscrete(transform.translation(), cloud, 30, 1);
+    this->map_.insertPointCloudDiscrete(transform.translation(), cloud, 10, 1);
+    this->map_.insertPointCloudDiscrete(worldTransform.translation(), bounds, -1, 1);
     //this->map_.insertPointCloudDiscrete(transform.translation(), obstacle_cloud, 50, 1);
+
     this->publishMap();
 }
+
 

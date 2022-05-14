@@ -4,17 +4,12 @@ world_frame_name: "world"
 
 ## Goal Parameters
 goal_msg: ""
-n_goal: 2
+n_goal: 1
 
 goal1_x: 60
 goal1_y: 0
 goal1_z: 1
-goal1_yaw: 0 # approx -Pi / 4
-
-goal2_x: 0
-goal2_y: 0
-goal2_z: 1
-goal2_yaw: 0
+goal1_yaw: 0 # approx -Pi /
 
 ## Robot Parameters
 n_robot: 1
@@ -22,15 +17,15 @@ robot_name: "kingfisher"
 robot_model: "unknown"
 robot_frame_name: "kingfisher"
 
-robot_bbx_x_min: -0.0075
-robot_bbx_x_max: 0.0075
-robot_bbx_y_min: -0.0075
-robot_bbx_y_max: 0.0075
-robot_bbx_z_min: -0.015
-robot_bbx_z_max: 0.015
+robot_bbx_x_min: -0.06123
+robot_bbx_x_max: 0.06123
+robot_bbx_y_min: -0.06123
+robot_bbx_y_max: 0.06123
+robot_bbx_z_min: -0.0866
+robot_bbx_z_max: 0.0866
 
-robot_max_lat_velo: 2
-robot_max_lat_acc: 2
+robot_max_lat_velo: 3
+robot_max_lat_acc: 3
 robot_max_yaw_velo: 1
 robot_max_yaw_acc: 1
 
@@ -40,5 +35,5 @@ robot_init_pos_z: 1
 robot_init_yaw: 0
 
 robot_odometry_msg: "/kingfisher/dodgeros_pilot/odometry"
-# robot_pose_control_msg: "/kingfisher/dodgeros_pilot/go_to_pose"
+#robot_pose_control_msg: "/wrapper/position_inqput"
 robot_velo_control_msg: "/kingfisher/dodgeros_pilot/velocity_command"

@@ -1,32 +1,27 @@
-// LAST UPDATE: 2022.04.03
-//
-// AUTHOR: Neset Unver Akmandor (NUA)
-//
-// E-MAIL: akmandor.n@northeastern.edu
-//
-// DESCRIPTION: TODO...
+#include <ros/ros.h>
 
-// --CUSTOM LIBRARIES--
+#include <std_msgs/Empty.h>
+#include <std_msgs/Bool.h>
 #include "trajectory_sampling_utility.h"
 #include "tentabot.h"
 
-int main(int argc, char** argv)
-{
-    // INITIALIZE ROS
-    ros::init(argc, argv, "tentabot_server");
-    
-    // INITIALIZE THE MAIN ROS NODE HANDLE
-    ros::NodeHandle nh;
+ros::Publisher offPublisher;
+ros::Publisher resetPublisher;
+ros::Publisher enablePublisher;
+ros::Publisher startPublisher;
 
-    // INITIALIZE THE ROS NODE HANDLE FOR PARAMETERS
-    ros::NodeHandle pnh("~");
+void reset() {
+    auto empty = std_msgs::EmptyConstPtr(new std_msgs::Empty);
+    auto enable = std_msgs::BoolPtr(new std_msgs::Bool);
+    enable->data = true;
 
-    // INITIALIZE TRANSFORM LISTENER
-    tf::TransformListener* listener = new tf::TransformListener;
+    offPublisher.publish(empty);
+    resetPublisher.publish(empty);
+    enablePublisher.publish(enable);
+    startPublisher.publish(enable);
+}
 
-    //// SET PARAMETERS
-
-    // INITIALIZE AND SET WORLD PARAMETERS
+void startTentabot(ros::NodeHandle& nh, const ros::NodeHandle& pnh, tf::TransformListener* listener, bool* signal) {
     string world_frame_name;
     pnh.param<string>("/world_frame_name", world_frame_name, "");
     cout << "tentabot_server::main -> world_frame_name: " << world_frame_name << endl;
@@ -35,7 +30,7 @@ int main(int argc, char** argv)
     string goal_msg;
     pnh.param<string>("/goal_msg", goal_msg, "");
     GoalUtility gu(nh, world_frame_name, "/nav_goal", goal_msg);
-    
+
     if(goal_msg == "")
     {
         vector<double> goal_vector_x;
@@ -61,7 +56,7 @@ int main(int argc, char** argv)
             cout << "tentabot_server::main -> " << goal_name << "_y: " << goal_y << endl;
             cout << "tentabot_server::main -> " << goal_name << "_z: " << goal_z << endl;
             */
-            
+
             gu.addGoalPoint(goal_x, goal_y, goal_z);
         }
     }
@@ -151,15 +146,15 @@ int main(int argc, char** argv)
             tsu.construct_trajectory_data_by_3d_holonomic(-rp.dummy_max_lat_velo,
                                                           0,
                                                           -rp.dummy_max_lat_velo,
-                                                          -15,
+                                                          -10,
                                                           -rp.dummy_max_lat_velo,
-                                                          -15,
+                                                          -10,
                                                           rp.dummy_max_lat_velo,
-                                                          15,
+                                                          10,
                                                           rp.dummy_max_lat_velo,
-                                                          15,
+                                                          10,
                                                           rp.dummy_max_lat_velo,
-                                                          15,
+                                                          10,
                                                           1.22173,
                                                           1.22173,
                                                           0.01);
@@ -168,7 +163,7 @@ int main(int argc, char** argv)
         {
             cout << "tentabot_server::main -> ERROR: trajectory_gen_type is not defined!" << endl;
         }
-        
+
         tsu.fill_trajectory_sampling_visu();
         tsu.save_trajectory_data();
     }
@@ -278,5 +273,24 @@ int main(int argc, char** argv)
         timer = nh.createTimer(ros::Duration(pp.nav_dt), &Tentabot::mainCallback, &tbot);
     }
 
-    ros::spin();
+    while(*signal) {
+        ros::spinOnce();
+    }
+
+    timer.stop();
+}
+
+void runTest() {
+
+}
+
+int main(int argc, char* argv[]) {
+    ros::init(argc, argv, "pid_tuner");
+    ros::NodeHandle nh;
+    ros::NodeHandle pnh("~");
+
+    offPublisher = nh.advertise<std_msgs::Empty>("/kingfisher/dodgeros_pilot/off", 1);
+    resetPublisher = nh.advertise<std_msgs::Empty>("/kingfisher/dodgeros_pilot/reset_sim", 1);
+    enablePublisher = nh.advertise<std_msgs::Bool>("/kingfisher/dodgeros_pilot/enable", 1);
+    startPublisher = nh.advertise<std_msgs::Empty>("/kingfisher/dodgeros_pilot/start", 1);
 }
