@@ -28,7 +28,7 @@ mkdir build
 cd build || exit
 cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=ON ..
 make
-make install
+sudo make install
 cd ../../
 
 #------ Install eigen sub-dep
@@ -40,6 +40,8 @@ cd "fcl" || exit
 mkdir build
 cd "build" || exit
 cmake ..
+make
+sudo make install
 cd ../../
 
 cd "${catkin_path}/src" || exit
@@ -108,6 +110,11 @@ cd ..
 # install navrep 
 git clone https://github.com/ethz-asl/navrep.git # need to run setup.py install
 
+# Install UfoMap
+sudo apt install libtbb-dev
+sudo apt install python3-catkin-tools python3-osrf-pycommon
+
+git clone https://github.com/UnknownFreeOccupied/ufomap.git
 
 # 3.15 Install ROS dependencies
 sudo apt-get install libsuitesparse-dev
@@ -117,6 +124,7 @@ sudo apt-get install libnlopt-dev
 cd ..
 wait
 source /opt/ros/noetic/setup.bash
+rosdep update
 rosdep install -i --from-path src --rosdistro noetic -y
 
 # 3.17 Install Python dependencies
