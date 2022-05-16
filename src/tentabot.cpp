@@ -890,6 +890,10 @@ void Tentabot::initialize(NodeHandle& nh)
     mid_data_stream.open(mid_data_filename);
     mid_data_stream << "update_planning_states[ns],update_ego_grid_data[ns],update_heuristic_values[ns],select_best_tentacle[ns],send_motion_command[ns]\n";
   }
+
+  status_param.hasPublishedVelo = false;
+  status_param.start_command_pub = nh.advertise<std_msgs::Empty>("/kingfisher/start_navigation", 1);
+
   cout << "Tentabot::initialize -> Completed!" << endl;
 }
 
@@ -2606,13 +2610,18 @@ void Tentabot::send_motion_command_by_pose_control()
 
 void Tentabot::send_motion_command_by_velocity_control()
 {
+  if(!status_param.hasPublishedVelo) {
+      status_param.start_command_pub.publish(std_msgs::EmptyConstPtr(new std_msgs::Empty));
+      status_param.hasPublishedVelo = true;
+  }
+
   geometry_msgs::Pose active_goal = goal_util.getActiveGoal();
 
   double dist2goal = find_Euclidean_distance(active_goal.position, status_param.robot_pose.position);
 
   if(status_param.nav_result == -1)                         // crash
   {
-    cout << "Tentabot::send_motion_command_by_velocity_control -> OMG! I think I've just hit something!!!" << endl;
+    //cout << "Tentabot::send_motion_command_by_velocity_control -> OMG! I think I've just hit something!!!" << endl;
     //status_param.navexit_flag = true;
   }
   else if(dist2goal < process_param.goal_close_threshold)   // reach goal
@@ -2668,7 +2677,7 @@ void Tentabot::send_motion_command_by_velocity_control()
     double total_y = 0;
     double total_z = 0;
 
-    if(status_param.velocity_cmds.size() > 25) {
+    if(status_param.velocity_cmds.size() > 10) {
         status_param.velocity_cmds.pop_front();
     }
 
