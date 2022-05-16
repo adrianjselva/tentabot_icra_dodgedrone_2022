@@ -40,8 +40,8 @@ mode: "testing"
 
 ## Trajectory Sampling Parameters
 trajectory_sampling_dataset_path: "dataset/trajectory_sampling/kingfisher/"
-tlen: 10
-tsamp_cnt: 10
+tlen: 30
+tsamp_cnt: 15
 
 #trajectory_gen_type: "geometric"
 tyaw: 1.22173
@@ -50,38 +50,38 @@ tyaw_cnt: 5
 tpitch_cnt: 4
 
 trajectory_gen_type: "kinematic"
-ttime: 3.333
-lat_velo_samp_cnt: 9
-ang_velo_samp_cnt: 9
+ttime: 10
+lat_velo_samp_cnt: 29
+ang_velo_samp_cnt: 15
 
 
 ## Offline Tuning Parameters
-trajectory_data_path: "dataset/trajectory_sampling/kingfisher/20220514_164842/"
+trajectory_data_path: "dataset/trajectory_sampling/kingfisher/20220515_204955/" #dataset/trajectory_sampling/kingfisher/20220515_194930/" #dataset/trajectory_sampling/kingfisher/20220515_192512/"
 max_occupancy_belief_value: 100
 sweight_max: 1
 sweight_scale: 10
-egrid_vdim: 0.1
+egrid_vdim: 0.32
 
-pdist_x_min: -0.5
-pdist_x_max: 0.5
-pdist_y_min: -0.5
-pdist_y_max: 0.5
-pdist_z_min: -0.5
-pdist_z_max: 0.5
+pdist_x_min: -0.16
+pdist_x_max: 0.16
+pdist_y_min: -0.16
+pdist_y_max: 0.16
+pdist_z_min: -0.16
+pdist_z_max: 0.16
 
-sdist_x_min: -0.5
-sdist_x_max: 0.5
-sdist_y_min: -0.5
-sdist_y_max: 0.5
-sdist_z_min: -0.5
-sdist_z_max: 0.5
+sdist_x_min: -0.32
+sdist_x_max: 0.32
+sdist_y_min: -0.32
+sdist_y_max: 0.32
+sdist_z_min: -0.32
+sdist_z_max: 0.32
 
 ## Online tuning Parameters
 tbin_obs_cnt_threshold: 1
-crash_dist_scale: 0.5
+crash_dist_scale: 3
 occupancy_scale: 30
-close_scale: 50
-smooth_scale: 40
+close_scale: 20
+smooth_scale: 0
 
 ### DRL Parameters
 ### NOTE: Be sure that -> drl_service_flag: true

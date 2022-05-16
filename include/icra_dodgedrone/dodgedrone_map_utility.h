@@ -38,6 +38,8 @@ private:
     ufo::map::OccupancyMap map_;
 
     ufo::map::PointCloud boundingBox;
+
+    double bbxMapResolution;
     //sensor_msgs::PointCloud2Ptr obstacle_pointcloud;
 public:
 

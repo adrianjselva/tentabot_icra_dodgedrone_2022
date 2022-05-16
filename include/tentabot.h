@@ -210,6 +210,8 @@ class Tentabot
       ros::Publisher command_pose_pub;
       ros::Publisher command_velo_pub;
 
+      deque<geometry_msgs::Point> velocity_cmds;
+
       int counter;
       bool navexit_flag;                                        // TODO: Review: flag to exit from the navigation loop  
     };

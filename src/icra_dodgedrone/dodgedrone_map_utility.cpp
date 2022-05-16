@@ -16,7 +16,7 @@
 
 DodgeDroneMapUtility::DodgeDroneMapUtility(ros::NodeHandle& n) :
 nh_(n),
-map_(0.16),
+map_(0.32),
 tf_listener(this->tf_buffer) {
     this->pointcloud_subscriber_ = nh_.subscribe("/kingfisher/pointcloud",
                                                  1,
@@ -27,6 +27,8 @@ tf_listener(this->tf_buffer) {
                                             //              &DodgeDroneMapUtility::updateObstacles,
                                            //               this);
     this->map_publisher_ = nh_.advertise<ufomap_msgs::UFOMapStamped>("/kingfisher/ufomap", 1);
+
+    nh_.getParam("bbx_resolution", bbxMapResolution);
 }
 
 void DodgeDroneMapUtility::publishMap() {
@@ -69,19 +71,33 @@ void DodgeDroneMapUtility::updateMapFromPointcloud(const sensor_msgs::PointCloud
     ufo::map::PointCloud cloud;
     ufo::map::PointCloud bounds;
 
+
+
     for(int x = -5; x <= 65; x++) {
         for(int z = 0; z <= 10; z++) {
-            ufo::map::Point3 left((double) x, -10.0, (double) z);
-            ufo::map::Point3 right((double) x, 10.0, (double) z);
-            bounds.push_back(left);
-            bounds.push_back(right);
+            double factor = 0.25;
+
+            for(int i = 0; i < (int)(1.0 / factor); i++) {
+                for(int j = 0; j < (int)(1.0 / factor); j++) {
+                    ufo::map::Point3 left((double) x + factor * i, -10.0, (double) z + factor * j);
+                    ufo::map::Point3 right((double) x + factor * i, 10.0, (double) z + factor * j);
+                    bounds.push_back(left);
+                    bounds.push_back(right);
+                }
+            }
         }
     }
 
     for(int x = -5; x <= 65; x++) {
-        for(int y = -10; y <= 10; y++) {
-            ufo::map::Point3 top((double) x, (double) y, 10.0);
-            bounds.push_back(top);
+        for (int y = -10; y <= 10; y++) {
+            double factor = 0.25;
+
+            for (int i = 0; i < (int) (1.0 / factor); i++) {
+                for (int j = 0; j < (int) (1.0 / factor); j++) {
+                    ufo::map::Point3 top((double) x + factor * i, (double) y + factor * j, 10.0);
+                    bounds.push_back(top);
+                }
+            }
         }
     }
 
@@ -94,7 +110,7 @@ void DodgeDroneMapUtility::updateMapFromPointcloud(const sensor_msgs::PointCloud
 
     // Integrate point cloud into UFOMap, no max range (third param -1),
     // free space at depth level 1 (fourth param 1)
-    this->map_.insertPointCloudDiscrete(transform.translation(), cloud, 10, 1);
+    this->map_.insertPointCloudDiscrete(transform.translation(), cloud, 30, 1);
     this->map_.insertPointCloudDiscrete(worldTransform.translation(), bounds, -1, 1);
     //this->map_.insertPointCloudDiscrete(transform.translation(), obstacle_cloud, 50, 1);
 

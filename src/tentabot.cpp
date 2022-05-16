@@ -2253,8 +2253,26 @@ void Tentabot::update_heuristic_values()
       //DETERMINE SMOOTHNESS VALUE
       if(status_param.ex_best_tentacle >= 0)
       {
-        total_dist_smooth += find_Euclidean_distance(off_tuning_param.tentacle_data[status_param.ex_best_tentacle][vsamp[i]], 
-                                                     off_tuning_param.tentacle_data[k][vsamp[i]]);
+        if(robot_param.robot_velo_control_msg != "") {
+            double ex_best_velocity_x = off_tuning_param.velocity_control_data[status_param.ex_best_tentacle][0];
+            double ex_best_velocity_y = off_tuning_param.velocity_control_data[status_param.ex_best_tentacle][1];
+
+            double k_velocity_x = off_tuning_param.velocity_control_data[k][0];
+            double k_velocity_y = off_tuning_param.velocity_control_data[k][1];
+
+            double angle = atan2(ex_best_velocity_y, ex_best_velocity_x) - atan2(k_velocity_y, k_velocity_x);
+
+            if (angle < 0) {
+                angle += 2 * M_PI;
+            }
+
+//            total_dist_smooth += find_Euclidean_distance(ex_best_velocity, k_velocity);
+            total_dist_smooth += angle;
+        } else {
+            total_dist_smooth += find_Euclidean_distance(off_tuning_param.tentacle_data[status_param.ex_best_tentacle][vsamp[i]],
+                                                         off_tuning_param.tentacle_data[k][vsamp[i]]);
+        }
+
       }
       else
       {
@@ -2595,7 +2613,7 @@ void Tentabot::send_motion_command_by_velocity_control()
   if(status_param.nav_result == -1)                         // crash
   {
     cout << "Tentabot::send_motion_command_by_velocity_control -> OMG! I think I've just hit something!!!" << endl;
-    status_param.navexit_flag = true;
+    //status_param.navexit_flag = true;
   }
   else if(dist2goal < process_param.goal_close_threshold)   // reach goal
   {
@@ -2621,35 +2639,53 @@ void Tentabot::send_motion_command_by_velocity_control()
 
   if(!status_param.navexit_flag)
   {
-    double next_yaw;
-
-    double dist2goal_threshold = 3.0;
-    double next_yaw_threshold = 0.4*PI;
-    double min_speed = 0.0;
-    double speed_inc_dec = 0.5;
-    double weight_inc_dec = 0.25;
-    double angular_velocity_weight = 2.0;
-    double min_lat_speed_weight = 1.0;
-    double max_lat_speed_weight = 4.0;
-
     tf::Vector3 next_point_wrt_robot( off_tuning_param.tentacle_data[status_param.best_tentacle][0].x,
                                     off_tuning_param.tentacle_data[status_param.best_tentacle][0].y,
                                     off_tuning_param.tentacle_data[status_param.best_tentacle][0].z);
 
-    double max_yaw_angle_dt = robot_param.dummy_max_yaw_velo * status_param.dt;
 
     // CALCULATE NEXT YAW ANGLE
-    next_yaw = atan2(next_point_wrt_robot.y(), next_point_wrt_robot.x());
-    if (abs(next_yaw) > max_yaw_angle_dt)
-    {
-      next_yaw *= max_yaw_angle_dt / abs(next_yaw);
-    }
-    next_yaw *= angular_velocity_weight;
+    double desired_yaw = atan2(next_point_wrt_robot.y(), next_point_wrt_robot.x());
+    double current_yaw = status_param.measured_robot_pose.orientation.z;
+    double alpha = 2.0;
+
+    double yaw_rate = (alpha * (desired_yaw - current_yaw)) + 0.1 * (current_yaw - status_param.prev_robot_pose.orientation.z);
+
 
     status_param.command_velo.twist.linear.x = off_tuning_param.velocity_control_data[status_param.best_tentacle][0];
     status_param.command_velo.twist.linear.y = off_tuning_param.velocity_control_data[status_param.best_tentacle][1];
     status_param.command_velo.twist.linear.z = off_tuning_param.velocity_control_data[status_param.best_tentacle][2];
-    status_param.command_velo.twist.angular.z = next_yaw;
+    status_param.command_velo.twist.angular.z = 0;
+
+    geometry_msgs::Point velo;
+    velo.x = status_param.command_velo.twist.linear.x;
+    velo.y = status_param.command_velo.twist.linear.y;
+    velo.z = status_param.command_velo.twist.linear.z;
+
+    status_param.velocity_cmds.push_back(velo);
+
+    double total_x = 0;
+    double total_y = 0;
+    double total_z = 0;
+
+    if(status_param.velocity_cmds.size() > 25) {
+        status_param.velocity_cmds.pop_front();
+    }
+
+    for(auto p : status_param.velocity_cmds) {
+        total_x += p.x;
+        total_y += p.y;
+        total_z += p.z;
+    }
+
+    total_x /= (int) status_param.velocity_cmds.size();
+    total_y /= (int) status_param.velocity_cmds.size();
+    total_z /= (int) status_param.velocity_cmds.size();
+
+    status_param.command_velo.twist.linear.x = total_x;
+    status_param.command_velo.twist.linear.y = total_y;
+    status_param.command_velo.twist.linear.z = total_z;
+
     status_param.command_velo_pub.publish(status_param.command_velo);
 
     /*
