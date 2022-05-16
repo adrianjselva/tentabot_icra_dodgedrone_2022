@@ -24,8 +24,8 @@ robot_bbx_y_max: 0.06123
 robot_bbx_z_min: -0.0866
 robot_bbx_z_max: 0.0866
 
-robot_max_lat_velo: 3
-robot_max_lat_acc: 3
+robot_max_lat_velo: 2.5
+robot_max_lat_acc: 2.5
 robot_max_yaw_velo: 1
 robot_max_yaw_acc: 1
 

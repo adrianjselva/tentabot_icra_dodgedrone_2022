@@ -50,13 +50,13 @@ tyaw_cnt: 5
 tpitch_cnt: 4
 
 trajectory_gen_type: "kinematic"
-ttime: 10
+ttime: 12
 lat_velo_samp_cnt: 29
 ang_velo_samp_cnt: 15
 
 
 ## Offline Tuning Parameters
-trajectory_data_path: "dataset/trajectory_sampling/kingfisher/20220515_204955/" #dataset/trajectory_sampling/kingfisher/20220515_194930/" #dataset/trajectory_sampling/kingfisher/20220515_192512/"
+trajectory_data_path: "dataset/trajectory_sampling/kingfisher/20220516_070448/" #dataset/trajectory_sampling/kingfisher/20220515_194930/" #dataset/trajectory_sampling/kingfisher/20220515_192512/"
 max_occupancy_belief_value: 100
 sweight_max: 1
 sweight_scale: 10
@@ -78,9 +78,9 @@ sdist_z_max: 0.32
 
 ## Online tuning Parameters
 tbin_obs_cnt_threshold: 1
-crash_dist_scale: 3
-occupancy_scale: 30
-close_scale: 20
+crash_dist_scale: 0.6
+occupancy_scale: 2
+close_scale: 30
 smooth_scale: 0
 
 ### DRL Parameters
