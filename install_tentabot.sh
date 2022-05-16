@@ -53,19 +53,19 @@ git clone https://github.com/ethz-asl/rotors_simulator.git
 git clone https://github.com/RIVeR-Lab/turtlebot3.git  #'noetic-akmandor' branch*
 cd "turtlebot3" || exit
 git checkout noetic-akmandor
-cd ..
+cd ../
 
 # 3.5 Install 'noetic-akmandor' branch of LMS1xx package into the src folder.
 git clone https://github.com/RIVeR-Lab/LMS1xx.git  #'noetic-akmandor' branch*
 cd "LMS1xx" || exit
 git checkout noetic-akmandor
-cd ..
+cd ../
 
 # 3.6 Install 'noetic-akmandor' branch of geometry2 package into the src folder.
 git clone https://github.com/RIVeR-Lab/geometry2.git  #'noetic-akmandor' branch*
 cd "geometry2" || exit
 git checkout noetic-akmandor
-cd ..
+cd ../
 
 # 3.7 Install catkin-simple package into the src folder.
 git clone https://github.com/catkin/catkin_simple.git
@@ -102,10 +102,12 @@ git clone https://github.com/jackal/jackal.git
 git clone https://github.com/husky/husky.git
 
 # Install joystick drivers into ssrc folder
+sudo apt-get install libbluetooth-dev
+sudo apt install libcwiid-dev
 git clone https://github.com/ros-drivers/joystick_drivers.git
 cd "joystick_drivers" ||exit
 git checkout kinetic-devel
-cd ..
+cd ../
 
 # install navrep 
 git clone https://github.com/ethz-asl/navrep.git # need to run setup.py install
@@ -115,13 +117,20 @@ sudo apt install libtbb-dev
 sudo apt install python3-catkin-tools python3-osrf-pycommon
 
 git clone https://github.com/UnknownFreeOccupied/ufomap.git
+cd "ufomap/ufomap" || exit
+mkdir "build"
+cd "build" || exit
+cmake ..
+make
+sudo make install
+cd ../../../
 
 # 3.15 Install ROS dependencies
 sudo apt-get install libsuitesparse-dev
 sudo apt-get install libnlopt-dev
 
 # 3.16 Install other ROS dependencies using rosdep tool:
-cd ..
+cd ../
 wait
 source /opt/ros/noetic/setup.bash
 rosdep update
