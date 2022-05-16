@@ -103,6 +103,19 @@ if __name__ == "__main__":
     print("dodgedrone_tentabot_framework_launch:: __main__ -> Tentabot-Server Parameters:")
     print("dodgedrone_tentabot_framework_launch:: __main__ -> config_tentabot_server: " + str(config_tentabot_server))
 
+    if rviz_flag:
+
+        rviz_path = tentabot_launch_path + "utilities/rviz.launch"
+        rviz_args = [rviz_path,
+                     'robot_name:=' + str(robot_name)]
+
+        rviz_launch = [ (roslaunch.rlutil.resolve_launch_arguments(rviz_args)[0], rviz_args[1:]) ]
+        rviz = roslaunch.parent.ROSLaunchParent(uuid, rviz_launch)
+        rviz.start()
+
+        print("tentabot_framework_launch:: __main__ -> Launched Rviz!")
+        rospy.sleep(1)
+
     ## Launch Map Utility Server
     if map_utility_flag:
         map_utility_path = tentabot_launch_path + "utilities/map_utility_server.launch"
