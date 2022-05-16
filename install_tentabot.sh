@@ -9,70 +9,59 @@
 
 # GML TODO: verify new auto install
 
-echo -e "What is the absolute file path to your user from root? (for example: /home/YOUR_USERNAME_HERE/)"
-read abs_path
-echo -e "What is the absolute path to your catkin workspace? (for example:  home/YOUR_USERNAME_HERE/catkin_ws)"
-read catkin_path
+sudo apt update
+sudo apt install python3-pip
 
-echo -e "What build command do you use? (catkin_make or catkin build)"
-read catkin_command
+tentabot_path=$(pwd)
+cd ../../
+catkin_path=$(pwd)
+cd "${tentabot_path}" || exit
 
-echo -e "Do you already have FCL (the Flexible Collision Library)"
-echo -e "and it's dependencies installed? (y/n)"
-read fcl
+# 3.1 Install flexible-collision-library/fcl following their instructions using CMake.
+#------ Install libcdd sub-dep
+mkdir "dependencies"
+cd "dependencies" || exit
 
-cd abs_path
+git clone https://github.com/danfis/libccd.git
+cd libccd || exit
+mkdir build
+cd build || exit
+cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=ON ..
+make
+make install
+cd ../../
 
-if [[ "$fcl" == "n" ]]; then
-    # 3.1 Install flexible-collision-library/fcl following their instructions using CMake.
-    #------ Install libcdd sub-dep
-    cd abs_path
-    mkdir tentabot_deps
-    cd tentabot_deps
+#------ Install eigen sub-dep
+apt-get install libeigen3-dev
 
-    git clone https://github.com/danfis/libccd.git
-    cd libccd
-    mkdir build 
-    cd build
-    cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=ON ..
-    make 
-    make install
-    cd ..
-    cd ..
+#------ Install fcl
+git clone https://github.com/flexible-collision-library/fcl.git
+cd "fcl" || exit
+mkdir build
+cd "build" || exit
+cmake ..
+cd ../../
 
-    #------ Install eigen sub-dep
-    apt-get install libeigen3-dev
-
-    #------ Install fcl
-    git clone https://github.com/flexible-collision-library/fcl.git
-    cd fcl
-    mkdir build 
-    cd build
-    cmake ..
-    cd ..
-    cd ..
-fi
-
-eval cd "$catkin_path"/src
+cd "${catkin_path}/src" || exit
 
 # 3.3 Install rotors_simulator package into the src folder.
 git clone https://github.com/ethz-asl/rotors_simulator.git
 
 # 3.4 Install 'noetic-akmandor' branch of turtlebot3 package into the src folder.
 git clone https://github.com/RIVeR-Lab/turtlebot3.git  #'noetic-akmandor' branch*
-cd turtlebot3
+cd "turtlebot3" || exit
 git checkout noetic-akmandor
 cd ..
 
 # 3.5 Install 'noetic-akmandor' branch of LMS1xx package into the src folder.
 git clone https://github.com/RIVeR-Lab/LMS1xx.git  #'noetic-akmandor' branch*
-cd LMS1xx
+cd "LMS1xx" || exit
 git checkout noetic-akmandor
 cd ..
 
 # 3.6 Install 'noetic-akmandor' branch of geometry2 package into the src folder.
 git clone https://github.com/RIVeR-Lab/geometry2.git  #'noetic-akmandor' branch*
-cd geometry2
+cd "geometry2" || exit
 git checkout noetic-akmandor
 cd ..
 
@@ -112,7 +101,7 @@ git clone https://github.com/husky/husky.git
 
 # Install joystick drivers into ssrc folder
 git clone https://github.com/ros-drivers/joystick_drivers.git
-cd joystick_drivers
+cd "joystick_drivers" ||exit
 git checkout kinetic-devel
 cd ..
 
@@ -121,8 +110,8 @@ git clone https://github.com/ethz-asl/navrep.git # need to run setup.py install
 
 
 # 3.15 Install ROS dependencies
-apt-get install libsuitesparse-dev
-apt-get install libnlopt-dev
+sudo apt-get install libsuitesparse-dev
+sudo apt-get install libnlopt-dev
 
 # 3.16 Install other ROS dependencies using rosdep tool:
 cd ..
@@ -134,6 +123,3 @@ rosdep install -i --from-path src --rosdistro noetic -y
 pip install stable-baselines3[extra] #only neeeded for tentabot drl
 pip install GitPython
 pip install squaternion
-
-# 3.18 Build the catkin workspace:
-$catkin_command
